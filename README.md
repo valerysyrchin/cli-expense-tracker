@@ -18,15 +18,15 @@ A personal finance CLI (Command Line Interface) application designed to track ex
 * Used advanced `psql` scripting flags to cleanly pass variables and format automated data updates.
 
 ### Project Structure
-* `schema.sql` — database schema script containing table structures, constraints, and initial currency/category data.
-* `finance.sh` — main interactive Bash script. It features a complete core menu system architecture (Insert, Edit, Analyze, Exit), with the **Expense Insertion** engine fully operational for the MVP stage.
-* `update_rates.sh` — automation script that connects to the currency API and updates exchange rates in the database.
+* `schema.sql` - database schema script containing table structures, constraints, and initial currency/category data.
+* `finance.sh` - main interactive Bash script. It features a complete core menu system architecture (Insert, Edit, Analyze, Exit), with the **Expense Insertion** engine fully operational for the MVP stage.
+* `update_rates.sh` - automation script that connects to the currency API and updates exchange rates in the database.
 
 ### Project Roadmap & Current Status
 The application’s core navigation tree is fully structured. Features are being rolled out modularly:
-* [x] **1) INSERT_MENU** — Fully functional. Allows multi-currency expense logging and real-time category selection.
-* [ ] **2) EDIT_MENU** — Planned. Will handle expense modification and entry deletion.
-* [ ] **3) ANALYZE_MENU** — Planned. Will generate monthly breakdowns, charts, and budget reports directly in the terminal.
+* [x] **1) INSERT_MENU** - Fully functional. Allows multi-currency expense logging and real-time category selection.
+* [ ] **2) EDIT_MENU** - Planned. Will handle expense modification and entry deletion.
+* [ ] **3) ANALYZE_MENU** - Planned. Will generate monthly breakdowns, charts, and budget reports directly in the terminal.
 
 ---
 
@@ -48,12 +48,12 @@ The application’s core navigation tree is fully structured. Features are being
 * Использовать специфические флаги утилиты `psql` для безопасной передачи переменных из Bash внутрь SQL-запросов.
 
 ### Структура проекта
-* `schema.sql` — готовый SQL-скрипт со всей структурой базы данных, связями и начальным списком валют и категорий.
-* `finance.sh` — главный интерактивный Bash-скрипт. Включает в себя готовую архитектуру главного меню (Добавление, Корректировка, Анализ, Выход). На этапе MVP полностью реализован и готов к работе первый модуль — **Добавление расходов**.
-* `update_rates.sh` — скрипт автоматизации, отвечающий за обращение к API и обновление курсов валют в базе.
+* `schema.sql` - готовый SQL-скрипт со всей структурой базы данных, связями и начальным списком валют и категорий.
+* `finance.sh` - главный интерактивный Bash-скрипт. Включает в себя готовую архитектуру главного меню (Добавление, Корректировка, Анализ, Выход). На этапе MVP полностью реализован и готов к работе первый модуль — **Добавление расходов**.
+* `update_rates.sh` - скрипт автоматизации, отвечающий за обращение к API и обновление курсов валют в базе.
 
 ### План развития проекта (Roadmap)
 Навигационное дерево приложения полностью спроектировано. Функционал добавляется модульно:
-* [x] **1) INSERT_MENU (Добавление)** — Полностью готово. Позволяет вносить траты в разных валютах с автоматической привязкой к категориям.
-* [ ] **2) EDIT_MENU (Корректировка)** — В планах. Изменение и удаление уже существующих записей о расходах.
-* [ ] **3) ANALYZE_MENU (Анализ)** — В планах. Вывод аналитики за месяц, группировка по категориям и отображение графиков прямо в консоли.
+* [x] **1) INSERT_MENU (Добавление)** - Полностью готово. Позволяет вносить траты в разных валютах с автоматической привязкой к категориям.
+* [ ] **2) EDIT_MENU (Корректировка)** - В планах. Изменение и удаление уже существующих записей о расходах.
+* [ ] **3) ANALYZE_MENU (Анализ)** - В планах. Вывод аналитики за месяц, группировка по категориям и отображение графиков прямо в консоли.
