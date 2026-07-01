@@ -1,8 +1,21 @@
 #! /bin/bash
 
-export PGPASSWORD='YOUR_DATABASE_PASSWORD'
+# load your secret variables from the local .env file (if it exists)
+[ -f .env ] && source .env
 
-PSQL="/c/Progra~1/PostgreSQL/18/bin/psql.exe --username=postgres --dbname=finance -t -A --no-align -c"
+# set default values if they weren't loaded from the .env file
+
+DB_USER=${DB_USER:-postgres}
+DB_NAME=${DB_NAME:-finance}
+DB_PASSWORD=${DB_PASSWORD:-""}
+
+# export the password so psql can use it automatically
+
+export PGPASSWORD=$DB_PASSWORD
+
+# universal psql command shortcut
+
+PSQL=${PSQL:-"psql --username=$DB_USER --dbname=$DB_NAME -t -A --no-align -c"}
 
 echo -e "\n~~~~~ EXPENCES TRACKER ~~~~~\n"
 

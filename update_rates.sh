@@ -1,9 +1,21 @@
 #! /bin/bash
 
-# postgreSQL connection path and flags
-export PGPASSWORD='YOUR_DATABASE_PASSWORD'
+# load your secret variables from the local .env file (if it exists)
+[ -f .env ] && source .env
 
-PSQL="/c/Progra~1/PostgreSQL/18/bin/psql.exe --username=postgres --dbname=finance -t -c"
+# set default values if they weren't loaded from the .env file
+
+DB_USER=${DB_USER:-postgres}
+DB_NAME=${DB_NAME:-finance}
+DB_PASSWORD=${DB_PASSWORD:-""}
+
+# export the password so psql can use it automatically
+
+export PGPASSWORD=$DB_PASSWORD
+
+# universal psql command shortcut
+
+PSQL=${PSQL:-"psql --username=$DB_USER --dbname=$DB_NAME -t -A --no-align -c"}
 
 # fetch current currency rates with USD as base in JSON format (v2 API)
 RESPONSE=$(curl -s "https://api.frankfurter.dev/v2/rates?base=USD")
