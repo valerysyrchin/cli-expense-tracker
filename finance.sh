@@ -115,11 +115,124 @@ INSERT_MENU() {
 
     # insert transaction to database
     INSERT_EXPENSE_RESULT=$($PSQL "insert into transactions(expense_category_id, currency_id, amount, transaction_date, description) values ($CATEGORY_ID, $CURRENCY_ID, $EXPENSE_AMOUNT, '$EXPENSE_DATE', $DESCRIPTION)")
-    echo "Expense has been added to database."
+    
+    MAIN_MENU "Expense has been added to database."
 }
 
 EDIT_MENU() {
-    MAIN_MENU "Sorry, this function is under development."
+
+    # set terminal columns to 1 locally to force vertical layout for select menus
+    local COLUMNS=1
+
+    if [[ -n $1 ]]
+    then
+        echo -e "$1"
+    fi
+
+    echo "How would you like to find an expense for editing?" 
+        echo -e "\n1. By category\n2. By date\n3. By currency\n4. By description\n5. Go back to main menu"
+    read EDIT_MENU_SELECTION
+
+    case $EDIT_MENU_SELECTION in
+        1) FIND_EXPENSE "category" "Enter category name: " ;;
+        2) FIND_EXPENSE "date" "Enter date (YYYY-MM-DD): " ;;
+        3) FIND_EXPENSE "currency" "Enter currency (USD, EUR, RUB...): " ;;
+        4) FIND_EXPENSE "description" "Enter search word for description: " ;;
+        5) MAIN_MENU ;;
+        *) EDIT_MENU "Please enter a valid option." ;;
+    esac
+}
+
+FIND_EXPENSE(){
+    local WHERE_CLAUSE=""
+
+    case $1 in
+        "category") 
+            echo -e "\nSelect a category to filter expenses:"
+    
+            readarray -t CATEGORIES < <($PSQL "select name from expense_categories order by expense_category_id" | tr -d '\r')
+            
+            local OLD_PS3=$PS3
+            PS3="Enter the number of category: "
+
+            select cat_item in "${CATEGORIES[@]}"
+            do
+                if [[ -n $cat_item ]]
+                then
+                    WHERE_CLAUSE="where expense_categories.name = '$cat_item'"
+                    break
+                else
+                    echo "Invalid choice. Try again."
+                fi
+            done
+            PS3=$OLD_PS3
+            ;;
+
+        "date")     
+            read -p "$2" SEARCH_VALUE
+            WHERE_CLAUSE="where transactions.transaction_date = '$SEARCH_VALUE'" 
+            ;;
+        "currency") 
+            read -p "$2" SEARCH_VALUE
+            WHERE_CLAUSE="where currencies.code ilike '%$SEARCH_VALUE%'" 
+            ;;
+        "description") 
+            read -p "$2" SEARCH_VALUE
+            WHERE_CLAUSE="where transactions.description ilike '%$SEARCH_VALUE%'" 
+            ;;
+    esac
+
+    QUERY="
+    select 
+        transactions.transaction_id || ';' || 
+        transactions.transaction_date || ';' || 
+        expense_categories.name || ';' || 
+        round(transactions.amount) || ' ' || currencies.code || ';' || 
+        coalesce(transactions.description, '')
+    from transactions
+    join expense_categories on transactions.expense_category_id = expense_categories.expense_category_id
+    join currencies on transactions.currency_id = currencies.currency_id
+    $WHERE_CLAUSE
+    order by transactions.transaction_date desc;"
+
+    # read the query results into an array
+    readarray -t RAW_DATA < <($PSQL "$QUERY" | tr -d '\r')
+
+    # check if the array is empty
+    if [[ ${#RAW_DATA[@]} -eq 0 ]]
+    then
+        EDIT_MENU "\nNo expenses found matching your criteria."
+        return
+    fi
+
+    echo -e "\nSelect the expense you want to edit:"
+
+    {
+    echo "NUM;ID;DATE;CATEGORY;AMOUNT;DESCRIPTION"
+    echo "---;--;----;--------;------;-----------"
+    
+    INDEX=1
+
+    for row in "${RAW_DATA[@]}"; do
+        echo "[$INDEX];$row"
+        ((INDEX++))
+    done
+    } | column -t -s ';' 
+
+    echo ""
+
+    while true; do
+
+        read -p "Enter the number of transaction (1-${#RAW_DATA[@]}): " CHOSEN_NUM 
+        if [[ "$CHOSEN_NUM" =~ ^[0-9]+$ ]] && [ "$CHOSEN_NUM" -ge 1 ] && [ "$CHOSEN_NUM" -le "${#RAW_DATA[@]}" ]; then
+            SELECTED_ROW="${RAW_DATA[$((CHOSEN_NUM-1))]}"
+            CHOSEN_ID=$(echo "$SELECTED_ROW" | cut -d';' -f1)
+            UPDATE_EXPENSE_MENU "$CHOSEN_ID"
+            break
+        else
+            echo "Invalid number. Please look at the [NUM] column."
+        fi
+    done
 }
 
 ANALYZE_MENU() {
