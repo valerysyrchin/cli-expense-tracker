@@ -31,8 +31,10 @@ MAIN_MENU() {
     
     case $MAIN_MENU_SELECTION in
         1) INSERT_MENU ;;
-        2) EDIT_MENU ;;
-        3) DELETE_MENU ;;
+        # Set the action context to 'edit' before opening the edit menu
+        2) ACTION_TYPE="edit" EDIT_MENU ;;
+        # Set the action context to 'delete' before opening the delete menu
+        3) ACTION_TYPE="delete" DELETE_MENU ;;
         4) ANALYZE_MENU ;;
         5) EXIT ;;
         *) MAIN_MENU "Please enter a valid option." ;;
@@ -262,97 +264,144 @@ UPDATE_EXPENSE_MENU() {
         echo -e "$2\n"
     fi
 
-    echo "What would you like to update?"
-    echo -e "\n1. Category\n2. Date\n3. Currency\n4. Description\n5. Go back to find expense menu\n6. Go back to main menu"
-    read UPDATE_EXPENSE_MENU_SELECTION
+    # If the operation is deletion, skip the update fields menu and proceed directly to execution
+    if [[ "$ACTION_TYPE" == "delete" ]]
+    then
+        UPDATE_EXPENSE_RESULT_MENU "" "" "$CHOSEN_ID"
+        return
+    else
+        echo "What would you like to update?"
+        echo -e "\n1. Category\n2. Date\n3. Currency\n4. Description\n5. Go back to find expense menu\n6. Go back to main menu"
+        read UPDATE_EXPENSE_MENU_SELECTION
 
-    case $UPDATE_EXPENSE_MENU_SELECTION in
-        1) UPDATE_EXPENSE_RESULT_MENU "category" "Enter new category name: " $CHOSEN_ID ;;
-        2) UPDATE_EXPENSE_RESULT_MENU "date" "Enter new date (YYYY-MM-DD): " $CHOSEN_ID ;;
-        3) UPDATE_EXPENSE_RESULT_MENU "currency" "Enter new currency code (USD, EUR, RUB...): " $CHOSEN_ID ;;
-        4) UPDATE_EXPENSE_RESULT_MENU "description" "Enter new description: " $CHOSEN_ID ;;
-        5) EDIT_MENU ;;
-        6) MAIN_MENU ;;
-        *) UPDATE_EXPENSE_MENU "$CHOSEN_ID" "Invalid choice. Please try again." ;;
-    esac
+        case $UPDATE_EXPENSE_MENU_SELECTION in
+            1) UPDATE_EXPENSE_RESULT_MENU "category" "Enter new category name: " $CHOSEN_ID ;;
+            2) UPDATE_EXPENSE_RESULT_MENU "date" "Enter new date (YYYY-MM-DD): " $CHOSEN_ID ;;
+            3) UPDATE_EXPENSE_RESULT_MENU "currency" "Enter new currency code (USD, EUR, RUB...): " $CHOSEN_ID ;;
+            4) UPDATE_EXPENSE_RESULT_MENU "description" "Enter new description: " $CHOSEN_ID ;;
+            5) EDIT_MENU ;;
+            6) MAIN_MENU ;;
+            *) UPDATE_EXPENSE_MENU "$CHOSEN_ID" "Invalid choice. Please try again." ;;
+        esac
+    fi
 }
 
 UPDATE_EXPENSE_RESULT_MENU() {
     # Get the transaction ID from the third argument
     local CHOSEN_ID=$3
 
-    case $1 in
-        "category") 
-            echo -e "\nSelect a new category for the expense:"
+    # Check if the global action context is set to delete a transaction
+    if [[ "$ACTION_TYPE" == "delete" ]]
+    then
+        echo -e "\nWARNING: You are about to delete transaction ID: $CHOSEN_ID"
+            read -p "Are you sure? [Y/n]: " CONFIRM
+        # Proceed with deletion only if the user confirms with 'y', 'Y' or pressing Enter
+        if [[ -z "$CONFIRM" || "$CONFIRM" == "y" || "$CONFIRM" == "Y" ]]
+        then
+            # Execute the delete query in the database
+            DELETE_EXPENSE_RESULT=$($PSQL "delete from transactions where transaction_id = $CHOSEN_ID")
+            MAIN_MENU "Transaction  #$CHOSEN_ID successfully deleted."
+            return
+        else
+            # Cancel operation and safely return to main menu
+            MAIN_MENU "Deletion canceled."
+            return
+        fi
+    else
+        case $1 in
+            "category") 
+                echo -e "\nSelect a new category for the expense:"
             
-            # Get all available categories from the database
-            readarray -t CATEGORIES < <($PSQL "select name from expense_categories order by expense_category_id" | tr -d '\r')
+                # Get all available categories from the database
+                readarray -t CATEGORIES < <($PSQL "select name from expense_categories order by expense_category_id" | tr -d '\r')
 
-            # Change the menu prompt helper locally
-            local OLD_PS3=$PS3
-            PS3="Enter category number: "
+                # Change the menu prompt helper locally
+                local OLD_PS3=$PS3
+                PS3="Enter category number: "
 
-            # Display categories list to the user
-            select SELECTED_CATEGORY in "${CATEGORIES[@]}"
-            do
-                if [[ -n $SELECTED_CATEGORY ]]
-                then
-                    UPDATE_CATEGORY=$SELECTED_CATEGORY
-                    # Get the ID for the chosen category name
-                    UPDATE_CATEGORY_ID=$($PSQL "select expense_category_id from expense_categories where name='$UPDATE_CATEGORY'" | tr -d '\r')
-                    break
-                else
+                # Display categories list to the user
+                select SELECTED_CATEGORY in "${CATEGORIES[@]}"
+                do
+                    if [[ -n $SELECTED_CATEGORY ]]
+                        then
+                        UPDATE_CATEGORY=$SELECTED_CATEGORY
+                        # Get the ID for the chosen category name
+                        UPDATE_CATEGORY_ID=$($PSQL "select expense_category_id from expense_categories where name='$UPDATE_CATEGORY'" | tr -d '\r')
+                        break
+                    else
                     echo "Invalid choice. Please try again."
-                fi
-            done
-            # Restore the original menu prompt helper
-            PS3=$OLD_PS3
-            ;;
-        "date")     
-            read -p "$2" UPDATE_DATE
-            ;;
-        "currency") 
-            read -p "$2" UPDATE_CURRENCY
-            # Find the currency ID using the code entered by the user
-            UPDATE_CURRENCY_ID=$($PSQL "select currency_id from currencies where code = '$UPDATE_CURRENCY'" | tr -d '\r')
-            ;;
-        "description") 
-            read -p "$2" UPDATE_DESCRIPTION
-            ;;
-    esac
+                    fi
+                done
+                # Restore the original menu prompt helper
+                PS3=$OLD_PS3
+                ;;
+            "date")     
+                read -p "$2" UPDATE_DATE
+                ;;
+            "currency") 
+                read -p "$2" UPDATE_CURRENCY
+                # Find the currency ID using the code entered by the user
+                UPDATE_CURRENCY_ID=$($PSQL "select currency_id from currencies where code = '$UPDATE_CURRENCY'" | tr -d '\r')
+                ;;
+            "description") 
+                read -p "$2" UPDATE_DESCRIPTION
+                ;;
+        esac
+        
+        # Execute the database updates based on the selected field type
+        if [[ $1 == 'category' ]]
+        then 
+            UPDATE_CATEGORY_TRANSACTION_RESULT=$($PSQL "update transactions set expense_category_id = '$UPDATE_CATEGORY_ID' where transaction_id = $CHOSEN_ID")
+            MAIN_MENU "Category has been updated."
+            return
+        fi
 
-    # Execute the database updates based on the selected field type
-    if [[ $1 == 'category' ]]
-    then 
-        UPDATE_CATEGORY_TRANSACTION_RESULT=$($PSQL "update transactions set expense_category_id = '$UPDATE_CATEGORY_ID' where transaction_id = $CHOSEN_ID")
-        MAIN_MENU "Category has been updated."
-        return
-    fi
+        if [[ $1 == 'date' ]]
+        then
+            UPDATE_DATE_TRANSACTION_RESULT=$($PSQL "update transactions set transaction_date = '$UPDATE_DATE' where transaction_id = $CHOSEN_ID")
+            MAIN_MENU "Date has been updated."
+            return
+        fi
 
-    if [[ $1 == 'date' ]]
-    then
-        UPDATE_DATE_TRANSACTION_RESULT=$($PSQL "update transactions set transaction_date = '$UPDATE_DATE' where transaction_id = $CHOSEN_ID")
-        MAIN_MENU "Date has been updated."
-        return
-    fi
+        if [[ $1 == 'currency' ]]
+        then
+            UPDATE_CURRENCY_TRANSACTION_RESULT=$($PSQL "update transactions set currency_id = '$UPDATE_CURRENCY_ID' where transaction_id = $CHOSEN_ID")
+            MAIN_MENU "Currency code has been updated."
+            return
+        fi
 
-    if [[ $1 == 'currency' ]]
-    then
-        UPDATE_CURRENCY_TRANSACTION_RESULT=$($PSQL "update transactions set currency_id = '$UPDATE_CURRENCY_ID' where transaction_id = $CHOSEN_ID")
-        MAIN_MENU "Currency code has been updated."
-        return
-    fi
-
-    if [[ $1 == 'description' ]]
-    then
-        UPDATE_DESCRIPTION_TRANSACTION_RESULT=$($PSQL "update transactions set description = '$UPDATE_DESCRIPTION' where transaction_id = $CHOSEN_ID")
-        MAIN_MENU "Description has been updated."
-        return
+        if [[ $1 == 'description' ]]
+        then
+            UPDATE_DESCRIPTION_TRANSACTION_RESULT=$($PSQL "update transactions set description = '$UPDATE_DESCRIPTION' where transaction_id = $CHOSEN_ID")
+            MAIN_MENU "Description has been updated."
+            return
+        fi
     fi
 }
 
 DELETE_MENU() {
-    MAIN_MENU "This feature is currently under development and will be available in an upcoming update."
+    # Force 'select' menus to render vertically by constraining terminal columns locally
+    local COLUMNS=1
+
+    # Display a status message if passed as an argument
+    if [[ -n $1 ]]
+    then
+        echo -e "$1"
+    fi
+
+    echo "Select a method to find an expense to delete: " 
+        echo -e "\n1. By category\n2. By date\n3. By currency\n4. By description\n5. Go back to main menu"
+    read DELETE_MENU_SELECTION
+
+    # Route the user based on the choice, passing the filter type and dynamic prompt as arguments
+    case $DELETE_MENU_SELECTION in
+        1) FIND_EXPENSE_MENU "category" "Enter category name: " ;;
+        2) FIND_EXPENSE_MENU "date" "Enter date (YYYY-MM-DD): " ;;
+        3) FIND_EXPENSE_MENU "currency" "Enter currency (USD, EUR, RUB...): " ;;
+        4) FIND_EXPENSE_MENU "description" "Enter a keyword for description: " ;;
+        5) MAIN_MENU ;;
+        *) DELETE_MENU "Please enter a valid option." ;;
+    esac
 }
 
 ANALYZE_MENU() {
