@@ -26,14 +26,15 @@ MAIN_MENU() {
     fi
 
     echo "What would you like to do?" 
-    echo -e "\n1. Insert an expense to database\n2. Edit an expense from database\n3. Analyze expenses\n4. Exit"
+    echo -e "\n1. Insert an expense to database\n2. Edit an expense from database\n3. Delete an expense from database\n4. Analyze expenses\n5. Exit"
     read MAIN_MENU_SELECTION
     
     case $MAIN_MENU_SELECTION in
         1) INSERT_MENU ;;
         2) EDIT_MENU ;;
-        3) ANALYZE_MENU ;;
-        4) EXIT ;;
+        3) DELETE_MENU ;;
+        4) ANALYZE_MENU ;;
+        5) EXIT ;;
         *) MAIN_MENU "Please enter a valid option." ;;
     esac
 }
@@ -350,8 +351,12 @@ UPDATE_EXPENSE_RESULT_MENU() {
     fi
 }
 
+DELETE_MENU() {
+    MAIN_MENU "This feature is currently under development and will be available in an upcoming update."
+}
+
 ANALYZE_MENU() {
-    MAIN_MENU "Sorry, this function is under development."
+    MAIN_MENU "This feature is currently under development and will be available in an upcoming update."
 }
 
 EXIT() {
