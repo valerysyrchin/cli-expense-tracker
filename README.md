@@ -34,7 +34,7 @@ Instead of processing string padding and column alignment inside complex Bash lo
 The application’s core navigation tree is fully structured. Features are being rolled out modularly:
 * [x] **1) INSERT_MENU** - Fully functional. Allows multi-currency expense logging and real-time category selection.
 * [x] **2) EDIT_MENU** - Fully functional. Implements multi-criteria search (`FIND_EXPENSE_MENU`) and dynamic transaction updates (`UPDATE_EXPENSE_MENU`).
-* [ ] **3) DELETE_MENU** - Planned. Will handle safe transaction removal with confirmation prompts.
+* [x] **3) DELETE_MENU** - Fully functional. Allows to handle safe transaction removal with confirmation prompts.
 * [ ] **4) ANALYZE_MENU** - Planned. Will generate monthly breakdowns, charts, and budget reports directly in the terminal.
 
 ---
@@ -73,5 +73,5 @@ The application’s core navigation tree is fully structured. Features are being
 Навигационное дерево приложения полностью спроектировано. Функционал добавляется модульно:
 * [x] **1) INSERT_MENU (Модуль добавления расходов)** - Полностью готов. Позволяет вносить траты в разных валютах с автоматической привязкой к категориям.
 * [x] **2) EDIT_MENU (Модуль редактирования расходов)** - Полностью готов. Реализован поиск по нескольким критериям (`FIND_EXPENSE_MENU`) и динамическое обновление данных в БД (`UPDATE_EXPENSE_MENU`).
-* [ ] **3) DELETE_MENU (Модуль удаления расходов)** - В планах. Безопасное удаление транзакций с подтверждением пользователя.
+* [x] **3) DELETE_MENU (Модуль удаления расходов)** - Полностью готов. Безопасное удаление транзакций с подтверждением пользователя.
 * [ ] **4) ANALYZE_MENU (Модуль анализа расходов)** - В планах. Вывод аналитики за месяц, группировка по категориям и отображение графиков прямо в консоли.
