@@ -19,7 +19,7 @@ A personal finance CLI (Command Line Interface) application designed to track ex
 
 ### Project Structure
 * `schema.sql` - Database schema script containing table structures, constraints, and initial currency/category data.
-* `finance.sh` - Main interactive Bash script. It features a complete core menu system architecture (insert, edit, delete, analyze, exit).
+* `expense-tracker.sh` - Main interactive Bash script. It features a complete core menu system architecture (insert, edit, delete, analyze, exit).
 * `update_rates.sh` - Automation script that connects to the currency API and updates exchange rates in the database.
 * `sample.env` - Template file for environment variables, which contains configuration parameters (such as database credentials) required to run the application. Copy this file to `.env` and fill in your actual data before starting.
 
@@ -58,7 +58,7 @@ The application’s core navigation tree is fully structured. Features are being
 
 ### Структура проекта
 * `schema.sql` - Готовый SQL-скрипт со всей структурой базы данных, связями и начальным списком валют и категорий.
-* `finance.sh` - Главный интерактивный Bash-скрипт. Включает в себя готовую архитектуру главного меню (добавление, корректировка, удаление, анализ, выход).
+* `expense-tracker.sh` - Главный интерактивный Bash-скрипт. Включает в себя готовую архитектуру главного меню (добавление, корректировка, удаление, анализ, выход).
 * `update_rates.sh` - Скрипт автоматизации, отвечающий за обращение к API и обновление курсов валют в базе.
 * `sample.env` - Шаблон файла переменных окружения, содержащий конфигурационные параметры (например, данные для подключения к базе данных), необходимые для работы приложения. Перед запуском скопируйте этот файл под именем `.env` и укажите свои реальные данные.
 
