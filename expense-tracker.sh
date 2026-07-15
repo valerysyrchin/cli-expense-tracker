@@ -106,8 +106,8 @@ INSERT_MENU() {
     fi
 
     # Select description (optional)
-    read -p "Add description? [y/N]: " DESCRIPTION_ANSWER
-    if [[ $DESCRIPTION_ANSWER == "y" || $DESCRIPTION_ANSWER == "Y" ]]
+    read -p "Add description? [Y/n]: " DESCRIPTION_ANSWER
+    if [[ -z $DESCRIPTION_ANSWER || $DESCRIPTION_ANSWER == "y" || $DESCRIPTION_ANSWER == "Y" ]]
     then 
         read -p "Enter description: " USER_DESCRIPTION
         DESCRIPTION="'$USER_DESCRIPTION'"
